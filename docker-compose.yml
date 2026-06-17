@@ -1,0 +1,22 @@
+services:
+  victim:
+    build:
+      context: .
+      dockerfile: Dockerfile.victim
+    container_name: victim
+    hostname: victim
+    networks:
+      - vsftpd-lab
+
+  attacker:
+    build:
+      context: .
+      dockerfile: Dockerfile.attacker
+    container_name: attacker
+    hostname: attacker
+    networks:
+      - vsftpd-lab
+
+networks:
+  vsftpd-lab:
+    driver: bridge

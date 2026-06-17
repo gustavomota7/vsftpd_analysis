@@ -1,0 +1,38 @@
+FROM ubuntu:20.04
+
+RUN apt-get update && \
+    apt-get install -y build-essential git libcap2-dev libssl-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+# Fix library paths for the 2011 build script
+RUN ln -s /usr/lib/x86_64-linux-gnu/libcrypt.so /usr/lib/libcrypt.so && \
+    ln -s /usr/lib/x86_64-linux-gnu/libcap.so /usr/lib/libcap.so
+
+# Set up users and directories vsftpd requires
+RUN mkdir -p /usr/share/empty/ && \
+    mkdir -p /var/ftp/ && \
+    (useradd nobody || true) && \
+    (useradd -d /var/ftp ftp || true)
+
+WORKDIR /opt
+RUN git clone https://github.com/nikdubois/vsftpd-2.3.4-infected.git
+WORKDIR /opt/vsftpd-2.3.4-infected
+run git branch clean 311e7b9a3976f02e5d3274d5dae8df3728a8c221
+
+RUN chmod +x vsf_findlibs.sh && \
+    echo "listen=YES\nlocal_enable=YES" > vsftpd.conf
+
+# -----------------------------------
+# Usuário não-root
+RUN useradd -m -s /bin/bash alice && \
+    echo "alice:1234" | chpasswd
+
+RUN echo "Este arquivo é comum e pertence a Alice." > /home/alice/arquivo_alice.txt
+
+RUN echo "SEGREDO DE ESTADO: O backdoor deu acesso total!" > /root/segredo_root.txt && \
+    chmod 600 /root/segredo_root.txt
+# -----------------------------------
+
+EXPOSE 21 6200
+
+CMD ["tail", "-f", "/dev/null"]

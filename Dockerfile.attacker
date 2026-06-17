@@ -1,0 +1,15 @@
+FROM ubuntu:20.04
+
+RUN apt-get update && \
+    apt-get install -y ftp netcat && \
+    rm -rf /var/lib/apt/lists/*
+
+# -----------------------------------
+# Usuário não-root
+RUN useradd -m -s /bin/bash bob && \
+    echo "bob:1234" | chpasswd
+# -----------------------------------
+
+WORKDIR /home/bob
+
+CMD ["tail", "-f", "/dev/null"]
